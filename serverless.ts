@@ -15,6 +15,10 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: 'aws',
     runtime: 'nodejs18.x',
+    vpc: {
+      securityGroupIds: ['sg-04b035c022873d68c', 'sg-0bc26181aca663852'],
+      subnetIds: ['subnet-6b06f330', 'subnet-4261c625'],
+    },
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,

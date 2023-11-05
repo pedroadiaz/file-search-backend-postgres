@@ -9,18 +9,18 @@ export interface IFeedback extends BaseModel {
 
 @Entity()
 export class FeedbackEntity implements IFeedback {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('increment')
     id: number;
 
-    @Column()
+    @Column("varchar", { length: 100 })
     email: string;
 
-    @Column()
+    @Column("varchar", { length: 500 })
     feedback: string;
 
-    @Column()
+    @Column("bool")
     active: boolean;
 
-    @Column()
+    @Column("timestamp")
     createdDate: Date;
 }

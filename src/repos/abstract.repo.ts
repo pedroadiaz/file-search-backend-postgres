@@ -25,7 +25,7 @@ export abstract class AbstractRepo<T extends BaseModel & ObjectLiteral> implemen
 
     async deleteById(id: number): Promise<void> {
         const repo = this.dataSource.getRepository(this.toType);
-        repo.delete({ id: id } as FindOptionsWhere<T>);
+        await repo.delete({ id: id } as FindOptionsWhere<T>);
 
         return;
     }
@@ -37,9 +37,11 @@ export abstract class AbstractRepo<T extends BaseModel & ObjectLiteral> implemen
         return result.affected;
     }
 
-    async AddEntity(entity: T): Promise<void> {
+    async AddEntity(entity: T): Promise<T> {
         const repository = this.dataSource.getRepository(this.toType);
-        repository.save(entity);
+        const created = await repository.save(entity);
+    
+        return created;
     }
 
     async GetAll(): Promise<T[]> {

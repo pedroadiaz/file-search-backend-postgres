@@ -14,12 +14,12 @@ export class BookEntity implements IBook {
     @ManyToOne(() => ClassEntity, classEntity => classEntity.books)
     class: ClassEntity
 
-    @Column()
+    @Column("varchar", { length: 250 })
     name: string;
 
-    @Column()
+    @Column("bool")
     active: boolean;
 
-    @Column()
+    @Column("timestamp")
     createdDate: Date;
 }

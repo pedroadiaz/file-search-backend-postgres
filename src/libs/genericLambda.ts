@@ -6,7 +6,7 @@ import { BaseModel } from '@schemas/baseModel';
 
 let successful: boolean | undefined = undefined;
 initializePostgres().then(b => {
-    console.log("initializing mongoose")
+    console.log("initializing typeorm")
     successful = b
 });
 

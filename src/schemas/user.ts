@@ -17,30 +17,30 @@ export class UserEntity implements IUser {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column("varchar", { length: 250 })
     email: string;
 
     @OneToMany(() => ClassEntity, classEntity => classEntity.user)
     classes: ClassEntity[]
 
-    @Column()
+    @Column("varchar", { length: 250 })
     firstName: string;
 
-    @Column()
+    @Column("varchar", { length: 250 })
     lastName: string;
 
-    @Column()
+    @Column("bool")
     paid: boolean;
 
-    @Column()
+    @Column("timestamp")
     nextPayDate: Date;
 
-    @Column()
+    @Column("bool")
     isAdmin: boolean;
 
-    @Column()
+    @Column("bool")
     active: boolean;
 
-    @Column()
+    @Column("timestamp")
     createdDate: Date;
 }

@@ -19,8 +19,28 @@ export const classFunctions = {
             }
         ]
     },
-    getClassById: {
+    getClasses: {
         handler: './src/functions/class/getClasses.handler',
+        events: [
+             {
+                http: {
+                    method: 'get',
+                    path: 'class',
+                    cors: {
+                      origin: "*",
+                      headers: [
+                        "Accept",
+                        "Content-Type",
+                        "Content-Length",
+                        "Authorization"
+                      ]
+                    }
+                }
+             }
+        ]
+    },
+    getClassById: {
+        handler: './src/functions/class/getClassById.handler',
         events: [
              {
                 http: {
@@ -66,6 +86,26 @@ export const classFunctions = {
                 http: {
                     method: 'delete',
                     path: 'class/{id}',
+                    cors: {
+                      origin: "*",
+                      headers: [
+                        "Accept",
+                        "Content-Type",
+                        "Content-Length",
+                        "Authorization"
+                      ]
+                    }
+                }
+             }
+        ]
+    },
+    updateClassById: {
+        handler: './src/functions/class/updateClass.handler',
+        events: [
+             {
+                http: {
+                    method: 'put',
+                    path: 'class',
                     cors: {
                       origin: "*",
                       headers: [

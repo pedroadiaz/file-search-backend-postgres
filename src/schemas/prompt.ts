@@ -8,18 +8,18 @@ export interface IPrompt extends BaseModel {
 
 @Entity()
 export class PromptEntity implements IPrompt {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('increment')
     id: number;
 
     @ManyToOne(() => ClassEntity, classEntity => classEntity.books)
     class: ClassEntity
 
-    @Column()
+    @Column("varchar", { length: 500 })
     prompt: string;
 
-    @Column()
+    @Column("bool")
     active: boolean;
 
-    @Column()
+    @Column("timestamp")
     createdDate: Date;
 }

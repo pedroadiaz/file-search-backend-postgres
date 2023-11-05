@@ -1,7 +1,7 @@
 import { BaseModel } from "@schemas/baseModel";
 
 export interface IEntityRepo<T extends BaseModel> {
-    AddEntity(entity: T): Promise<void>;
+    AddEntity(entity: T): Promise<T>;
     GetAll(): Promise<T[]>;
     getEntityById(id: number): Promise<T | null>;
     queryEntities(query: Record<string, any>): Promise<T[]>;

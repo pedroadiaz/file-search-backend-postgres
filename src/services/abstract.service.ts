@@ -28,7 +28,10 @@ export abstract class AbstractService<T extends BaseModel> implements IService<T
         return this.repository.updateById(entity, entity.id);
     }
 
-    public async createEntity(entity: T): Promise<void> {
+    public async createEntity(entity: T): Promise<T> {
+        if (!entity.createdDate) {
+            entity.createdDate = new Date();
+        }
         return this.repository.AddEntity(entity);
     }
 }

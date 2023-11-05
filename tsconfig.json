@@ -11,6 +11,7 @@
     "outDir": "lib",
     "experimentalDecorators": true, 
     "emitDecoratorMetadata": true,
+    "strict": false,
   },
   "include": ["src/**/*.ts", "serverless.ts"],
   "exclude": [

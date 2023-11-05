@@ -14,10 +14,10 @@ export const createLambda = async<T extends BaseModel>(service: IService<T>, eve
     const entity = JSON.parse(event.body) as T;
     console.log("entity base lambda: ", entity);
 
-    await service.createEntity(entity);
+    const created = await service.createEntity(entity);
 
     return formatJSONResponse({
-        message: "Entity successfully created"
+        createdEntity: created
     },
     201);
 }

@@ -12,24 +12,24 @@ export interface IClass extends BaseModel {
 
 @Entity()
 export class ClassEntity implements IClass {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('increment')
     id: number;
 
     @ManyToOne(() => UserEntity, user => user.classes)
     user: UserEntity
 
-    @Column()
+    @Column("varchar", { length: 100 })
     name: string;
 
     @OneToMany(() => BookEntity, book => book.class)
     books: BookEntity[]
 
     @OneToMany(() => PromptEntity, prompt => prompt.class)
-    prompts: PromptEntity[]
+    prompts: PromptEntity[];
 
-    @Column()
+    @Column("bool")
     active: boolean;
 
-    @Column()
+    @Column("timestamp")
     createdDate: Date;
 }
