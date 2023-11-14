@@ -32,6 +32,8 @@ export abstract class AbstractService<T extends BaseModel> implements IService<T
         if (!entity.createdDate) {
             entity.createdDate = new Date();
         }
+        console.log("entity type: ", typeof entity);
+        console.log("entity: ", entity);
         return this.repository.AddEntity(entity);
     }
 }

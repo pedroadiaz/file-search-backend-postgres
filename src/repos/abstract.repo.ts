@@ -1,4 +1,4 @@
-import { FindOptionsWhere, ObjectLiteral } from "typeorm";
+import { FindManyOptions, FindOptionsWhere, ObjectLiteral } from "typeorm";
 import { DataSource } from 'typeorm'
 import { IEntityRepo } from "./entity-repo.interface";
 import { BaseModel } from "@schemas/baseModel";
@@ -19,8 +19,9 @@ export abstract class AbstractRepo<T extends BaseModel & ObjectLiteral> implemen
 
     async queryEntities(query: Record<string, any>): Promise<T[]> {
         const repo = this.dataSource.getRepository(this.toType);
-        const options: FindOptionsWhere<T> = query as FindOptionsWhere<T>;
-        return repo.findBy(options);
+        const options: FindManyOptions<T> = query as FindManyOptions<T>;
+        console.log("options: ", options);
+        return repo.find(options);
     }
 
     async deleteById(id: number): Promise<void> {
@@ -40,7 +41,6 @@ export abstract class AbstractRepo<T extends BaseModel & ObjectLiteral> implemen
     async AddEntity(entity: T): Promise<T> {
         const repository = this.dataSource.getRepository(this.toType);
         const created = await repository.save(entity);
-    
         return created;
     }
 

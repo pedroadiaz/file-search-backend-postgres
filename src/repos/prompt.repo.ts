@@ -1,4 +1,4 @@
-import { PromptEntity, IPrompt } from "@schemas/prompt";
+import { PromptEntity } from "@schemas/prompt";
 import { AbstractRepo } from "./abstract.repo";
 import { DataSource } from 'typeorm';
 

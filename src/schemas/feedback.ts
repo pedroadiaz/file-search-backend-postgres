@@ -1,26 +1,11 @@
 import { BaseModel } from "./baseModel";
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-
-
-export interface IFeedback extends BaseModel {
-    email: string;
-    feedback: string;
-}
+import { Entity, Column } from 'typeorm';
 
 @Entity()
-export class FeedbackEntity implements IFeedback {
-    @PrimaryGeneratedColumn('increment')
-    id: number;
-
+export class FeedbackEntity extends BaseModel {
     @Column("varchar", { length: 100 })
     email: string;
 
     @Column("varchar", { length: 500 })
     feedback: string;
-
-    @Column("bool")
-    active: boolean;
-
-    @Column("timestamp")
-    createdDate: Date;
 }

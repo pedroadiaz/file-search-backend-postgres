@@ -1,4 +1,4 @@
-import { ClassEntity, IClass } from "@schemas/class";
+import { ClassEntity } from "@schemas/class";
 import { DataSource } from 'typeorm';
 import { AbstractRepo } from "./abstract.repo";
 

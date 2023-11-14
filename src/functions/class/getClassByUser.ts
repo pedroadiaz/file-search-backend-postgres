@@ -9,11 +9,13 @@ let successful: boolean | undefined = undefined;
 initializePostgres().then(b => successful = b);
 
 export const handler = async(event: APIGatewayProxyEvent, context: Context) : Promise<APIGatewayProxyResult> => {
-    const userId = event.queryStringParameters?.userId;
+    const userId = event.pathParameters?.userId;
+
+    console.log("userId parameter is: ", userId);
     
     if (!userId) {
         return formatJSONResponse({
-            message: `Email parameter must not be empty.`,
+            message: `userId parameter must not be empty.`,
         },
         400); 
     } 
@@ -25,8 +27,14 @@ export const handler = async(event: APIGatewayProxyEvent, context: Context) : Pr
 
     const service = new ClassService(dataSource);
     const result = await getByForeginKeyIdLambda(service, {
-        userId: userId
+        where:{ 
+            user: {
+                id: userId
+            }
+        }
     });
+
+    console.log("results: ", result);
 
     return result;
 }

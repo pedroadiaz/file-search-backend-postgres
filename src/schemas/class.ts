@@ -1,20 +1,11 @@
 import { BaseModel } from "./baseModel";
-import { BookEntity, IBook } from "./book";
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from 'typeorm';
-import { IPrompt, PromptEntity } from "./prompt";
+import { BookEntity } from "./book";
+import { Entity, Column, OneToMany, ManyToOne } from 'typeorm';
+import { PromptEntity } from "./prompt";
 import { UserEntity } from "./user";
 
-export interface IClass extends BaseModel {
-    name: string
-    books?: IBook[];
-    savedPrompts?: IPrompt[];
-}
-
 @Entity()
-export class ClassEntity implements IClass {
-    @PrimaryGeneratedColumn('increment')
-    id: number;
-
+export class ClassEntity extends BaseModel {
     @ManyToOne(() => UserEntity, user => user.classes)
     user: UserEntity
 
@@ -22,14 +13,8 @@ export class ClassEntity implements IClass {
     name: string;
 
     @OneToMany(() => BookEntity, book => book.class)
-    books: BookEntity[]
+    books: BookEntity[];
 
     @OneToMany(() => PromptEntity, prompt => prompt.class)
     prompts: PromptEntity[];
-
-    @Column("bool")
-    active: boolean;
-
-    @Column("timestamp")
-    createdDate: Date;
 }

@@ -1,4 +1,4 @@
-import { IUser, UserEntity } from "@schemas/user";
+import { UserEntity } from "@schemas/user";
 import { AbstractRepo } from "./abstract.repo";
 import { DataSource } from 'typeorm';
 

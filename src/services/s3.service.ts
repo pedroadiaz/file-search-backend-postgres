@@ -73,12 +73,18 @@ export class S3Loader extends BaseDocumentLoader {
     try {
       const s3Client = new S3Client(this.s3Config);
 
+      console.log("initialized s3 client: ", this.s3Config);
+
       const getObjectCommand = new GetObjectCommand({
         Bucket: this.bucket,
         Key: this.key,
       });
 
+      console.log("get object command initialized with the following: ", this.bucket, this.key);
+
       const response = await s3Client.send(getObjectCommand);
+
+      console.log("response from s3 bucket: ", response);
 
       const objectData = await new Promise<Buffer>((resolve, reject) => {
         const chunks: Buffer[] = [];

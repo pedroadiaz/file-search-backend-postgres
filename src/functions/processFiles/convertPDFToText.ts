@@ -10,6 +10,9 @@ export const handler = async (event: S3Event, context: Context) => {
 
         const indexId = key.split("/")?.[0];
 
+        console.log("bucket name: ", bucket);
+        console.log("file name: ", key);
+
         const loader = new S3Loader({
             bucket: bucket,
             key: key, 
@@ -17,21 +20,27 @@ export const handler = async (event: S3Event, context: Context) => {
             unstructuredAPIKey: "",
         });
 
+        console.log("initialized S3 loader.");
+
         const splitter = new RecursiveCharacterTextSplitter({
             chunkSize: 500,
             chunkOverlap: 0
         });
 
+        console.log("initialized recursive text splitter");
+
         const doc = await loader.loadAndSplit(splitter);
 
+        console.log("done splitting documents");
+
         console.log("number of documents: ", doc.length);
-        if (doc.length > 0) {
-            const max = doc.length < 20 ? doc.length : 20;
-            for (let i=0;i<max;i++) {
-                console.log(`content for index ${i}`, doc[i].pageContent);
-                // console.log(`metadata for index ${i}`, doc[i].metadata);
-            }
-        }
+        // if (doc.length > 0) {
+        //     const max = doc.length < 20 ? doc.length : 20;
+        //     for (let i=0;i<max;i++) {
+        //         console.log(`content for index ${i}`, doc[i].pageContent);
+        //         // console.log(`metadata for index ${i}`, doc[i].metadata);
+        //     }
+        // }
 
         const service = new PostgresService();
 

@@ -1,4 +1,4 @@
-import { FeedbackEntity, IFeedback } from "@schemas/feedback";
+import { FeedbackEntity } from "@schemas/feedback";
 import { AbstractRepo } from "./abstract.repo";
 import { DataSource } from 'typeorm';
 
