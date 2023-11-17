@@ -3,6 +3,7 @@ import { DataSource, DataSourceOptions, EntitySchema } from "typeorm";
 import { VectorStore } from "langchain/vectorstores/base";
 import { Embeddings } from "langchain/embeddings/base";
 import { Document } from "langchain/document";
+import { Documents } from "@schemas/document";
 /**
  * Interface that defines the arguments required to create a
  * `TypeORMVectorStore` instance. It includes Postgres connection options,
@@ -75,7 +76,7 @@ export class TypeORMVectorStore extends VectorStore {
       },
     });
     const appDataSource = new DataSource({
-      entities: [TypeORMDocumentEntity],
+      entities: [Documents],
       ...fields.postgresConnectionOptions,
     });
     this.appDataSource = appDataSource;
@@ -122,11 +123,9 @@ export class TypeORMVectorStore extends VectorStore {
     // This will create the table if it does not exist. We can call it every time as it doesn't
     // do anything if the table already exists, and it is not expensive in terms of performance
     await this.ensureTableInDatabase();
-    console.log("table in database!");
     try {
         const vectors: number[][] = await this.embeddings.embedDocuments(texts);
-        console.log("vector embeddings made: ", vectors?.[0]);
-        console.log("document: ", documents[0]);
+        console.log("document: ", documents.length);
         return this.addVectors(
           vectors,
           documents
@@ -147,7 +146,8 @@ export class TypeORMVectorStore extends VectorStore {
   async addVectors(vectors: number[][], documents: Document[]): Promise<void> {
     const rows = vectors.map((embedding, idx) => {
       const embeddingString = `[${embedding.join(",")}]`;
-      const documentRow = {
+      console.log("embeddings string length : ", embeddingString.length);
+      const documentRow: Documents = {
         pageContent: documents[idx].pageContent,
         embedding: embeddingString,
         metadata: documents[idx].metadata,
@@ -156,9 +156,11 @@ export class TypeORMVectorStore extends VectorStore {
       return documentRow;
     });
 
-    const documentRepository = this.appDataSource.getRepository(
-      this.documentEntity
-    );
+    console.log("rows count: ", rows.length);
+
+    const documentRepository = this.appDataSource.getRepository(Documents);
+
+    console.log("repo: ", documentRepository);
 
     const chunkSize = 500;
     for (let i = 0; i < rows.length; i += chunkSize) {

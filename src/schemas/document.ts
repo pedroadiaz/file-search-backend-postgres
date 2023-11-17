@@ -1,16 +1,16 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class DocumentEntity {
+export class Documents {
     @PrimaryGeneratedColumn("uuid")
-    id: string;
+    id?: string;
 
     @Column("varchar", { length: 1000 })
     pageContent: string;
 
     @Column({ type: "jsonb"})
-    metadata: string;
+    metadata: Record<string, any>;
 
-    @Column("varchar", { length: 1000 })
+    @Column("varchar", { length: 60000 })
     embedding: string;
 }

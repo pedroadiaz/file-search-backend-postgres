@@ -5,7 +5,8 @@ import { Readable } from "node:stream";
 import { S3Client, GetObjectCommand, S3ClientConfig } from "@aws-sdk/client-s3";
 import { BaseDocumentLoader } from "./base.loader";
 import { UnstructuredLoader as UnstructuredLoaderDefault } from "langchain/document_loaders/fs/unstructured";
-import { OpenAIWhisperAudio  } from 'langchain/document_loaders/fs/openai_whisper_audio'
+import { OpenAIWhisperAudio  } from 'langchain/document_loaders/fs/openai_whisper_audio';
+import { AudioTranscriptLoader } from "langchain/document_loaders/web/assemblyai";
 import { S3LoaderParams } from "./s3.service";
 
 export type S3Config = S3ClientConfig & {
@@ -50,7 +51,7 @@ export class S3AudioLoader extends BaseDocumentLoader {
       path.join(os.tmpdir(), "s3fileloader-")
     );
 
-    console.log("temp dir: ", tempDir);
+    let useWhisper = true;
 
     const filePath = path.join(tempDir, this.key);
 
@@ -83,6 +84,13 @@ export class S3AudioLoader extends BaseDocumentLoader {
 
       this._fs.writeFileSync(filePath, objectData);
 
+      const stats = this._fs.statSync(filePath);
+      const fileSizeInBytes = stats.size;
+      const sizeMB = fileSizeInBytes / (1024*1024);
+      useWhisper = sizeMB < 25;
+
+      console.log("file size is: ", sizeMB);
+
       console.log("file exists: ", this._fs.existsSync(filePath));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
@@ -91,10 +99,19 @@ export class S3AudioLoader extends BaseDocumentLoader {
       );
     }
     try {
-      const audioLoader = new OpenAIWhisperAudio(filePath);
-
-      console.log("file path: ", filePath);
-      console.log("initialized audio loader");
+      let audioLoader;
+      if (useWhisper) {
+        audioLoader = new OpenAIWhisperAudio(filePath);
+      } else {
+        audioLoader = new AudioTranscriptLoader(
+          {
+            audio_url: filePath
+          },
+          {
+            apiKey: process.env.ASSEMBLY_AI_API_TOKEN
+          }
+        );
+      }
 
       const docs = await audioLoader.load();
 

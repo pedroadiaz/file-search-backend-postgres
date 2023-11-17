@@ -5,6 +5,7 @@ import { PromptEntity } from '@schemas/prompt';
 import { UserEntity } from '@schemas/user';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import "reflect-metadata";
+import { Documents } from '@schemas/document';
 
 export const options: DataSourceOptions = {
     type: 'postgres',
@@ -13,7 +14,7 @@ export const options: DataSourceOptions = {
     username: process.env.POSTRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_SCHEMA,
-    entities: [BookEntity, ClassEntity, FeedbackEntity, PromptEntity, UserEntity],
+    entities: [BookEntity, ClassEntity, FeedbackEntity, PromptEntity, UserEntity, Documents],
     synchronize: true,
     ssl: true,
 }
