@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 import { formatJSONResponse } from '@libs/api-gateway';
 import { PostgresService } from "@services/postgres.service";

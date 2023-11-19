@@ -4,6 +4,7 @@ import { VectorStore } from "langchain/vectorstores/base";
 import { Embeddings } from "langchain/embeddings/base";
 import { Document } from "langchain/document";
 import { Documents } from "@schemas/document";
+import { Pool, Client } from 'pg'
 /**
  * Interface that defines the arguments required to create a
  * `TypeORMVectorStore` instance. It includes Postgres connection options,
@@ -47,45 +48,51 @@ export class TypeORMVectorStore extends VectorStore {
 
   _verbose?: boolean;
 
+  pool: Pool;
+
   _vectorstoreType(): string {
     return "typeorm";
   }
 
   private constructor(embeddings: Embeddings, fields: TypeORMVectorStoreArgs) {
     super(embeddings, fields);
-    this.tableName = fields.tableName || defaultDocumentTableName;
+    
+    this.pool = new Pool({
+      ssl: true
+    });
+    // this.tableName = fields.tableName || defaultDocumentTableName;
     this.filter = fields.filter;
 
-    const TypeORMDocumentEntity = new EntitySchema<TypeORMVectorStoreDocument>({
-      name: fields.tableName ?? defaultDocumentTableName,
-      columns: {
-        id: {
-          generated: "uuid",
-          type: "uuid",
-          primary: true,
-        },
-        pageContent: {
-          type: String,
-        },
-        metadata: {
-          type: "jsonb",
-        },
-        embedding: {
-          type: String,
-        },
-      },
-    });
-    const appDataSource = new DataSource({
-      entities: [Documents],
-      ...fields.postgresConnectionOptions,
-    });
-    this.appDataSource = appDataSource;
-    this.documentEntity = TypeORMDocumentEntity;
+    // const TypeORMDocumentEntity = new EntitySchema<TypeORMVectorStoreDocument>({
+    //   name: fields.tableName ?? defaultDocumentTableName,
+    //   columns: {
+    //     id: {
+    //       generated: "uuid",
+    //       type: "uuid",
+    //       primary: true,
+    //     },
+    //     pageContent: {
+    //       type: String,
+    //     },
+    //     metadata: {
+    //       type: "jsonb",
+    //     },
+    //     embedding: {
+    //       type: String,
+    //     },
+    //   },
+    // });
+    // const appDataSource = new DataSource({
+    //   entities: [Documents],
+    //   ...fields.postgresConnectionOptions,
+    // });
+    // this.appDataSource = appDataSource;
+    // this.documentEntity = TypeORMDocumentEntity;
 
-    this._verbose =
-      process.env.LANGCHAIN_VERBOSE === "true" ??
-      fields.verbose ??
-      false;
+    // this._verbose =
+    //   process.env.LANGCHAIN_VERBOSE === "true" ??
+    //   fields.verbose ??
+    //   false;
   }
 
   /**
@@ -103,10 +110,10 @@ export class TypeORMVectorStore extends VectorStore {
     const postgresqlVectorStore = new TypeORMVectorStore(embeddings, fields);
 
     console.log("data source: ", postgresqlVectorStore.appDataSource);
-    if (!postgresqlVectorStore.appDataSource.isInitialized) {
-      await postgresqlVectorStore.appDataSource.initialize();
-      console.log("datasource initialized");
-    }
+    // if (!postgresqlVectorStore.appDataSource.isInitialized) {
+    //   await postgresqlVectorStore.appDataSource.initialize();
+    //   console.log("datasource initialized");
+    // }
 
     return postgresqlVectorStore;
   }
@@ -146,7 +153,6 @@ export class TypeORMVectorStore extends VectorStore {
   async addVectors(vectors: number[][], documents: Document[]): Promise<void> {
     const rows = vectors.map((embedding, idx) => {
       const embeddingString = `[${embedding.join(",")}]`;
-      console.log("embeddings string length : ", embeddingString.length);
       const documentRow: Documents = {
         pageContent: documents[idx].pageContent,
         embedding: embeddingString,
@@ -158,19 +164,17 @@ export class TypeORMVectorStore extends VectorStore {
 
     console.log("rows count: ", rows.length);
 
-    const documentRepository = this.appDataSource.getRepository(Documents);
+    // const documentRepository = this.appDataSource.getRepository(Documents);
 
-    console.log("repo: ", documentRepository);
+    const insertStatement = `insert into documents (metadata, pagecontent, embedding) values ($1, $2, $3)`
 
-    const chunkSize = 500;
-    for (let i = 0; i < rows.length; i += chunkSize) {
-      const chunk = rows.slice(i, i + chunkSize);
-
+    for (let i = 0; i < rows.length; i++) {
+      const { metadata, pageContent, embedding } = rows[i];
       try {
-        await documentRepository.save(chunk);
+        await this.pool.query(insertStatement, [metadata, pageContent, embedding]);
       } catch (e) {
         console.error(e);
-        throw new Error(`Error inserting: ${chunk[0].pageContent}`);
+        throw new Error(`Error inserting: ${rows[i].pageContent}`);
       }
     }
   }
@@ -190,23 +194,39 @@ export class TypeORMVectorStore extends VectorStore {
     filter?: this["FilterType"]
   ): Promise<[TypeORMVectorStoreDocument, number][]> {
     const embeddingString = `[${query.join(",")}]`;
+    if (!filter && this.filter) {
+      filter = this.filter;
+    }
     const _filter = filter ?? "{}";
 
+    // const queryString = `
+    //   SELECT *, embedding <=> $1 as "_distance"
+    //   FROM documents
+    //   WHERE metadata @> $2
+    //   ORDER BY "_distance" ASC
+    //   LIMIT $3;`;
+    
     const queryString = `
-      SELECT *, embedding <=> $1 as "_distance"
-      FROM ${this.tableName}
-      WHERE metadata @> $2
-      ORDER BY "_distance" ASC
-      LIMIT $3;`;
+      SELECT *, embedding <=> '${embeddingString}' as "_distance" FROM documents WHERE metadata ->> 'classId' = '${_filter["classId"]}' ORDER BY "_distance" ASC LIMIT 3;`;
 
-    const documents = await this.appDataSource.query(queryString, [
-      embeddingString,
-      _filter,
-      k,
-    ]);
+      console.log("sql: ", queryString);
+
+    type returnType = {
+      id: string;
+      pagecontent: string;
+      pageContent: string;
+      embeddings: string;
+      metadata: object;
+      _distance: number;
+    }
+
+    const documents = await this.pool.query<returnType>(queryString);
+
+    console.log("documents: ", documents);
 
     const results = [] as [TypeORMVectorStoreDocument, number][];
-    for (const doc of documents) {
+    for (const doc of documents.rows) {
+      doc.pageContent = doc.pagecontent;
       if (doc._distance != null && doc.pageContent != null) {
         const document = new Document(doc) as TypeORMVectorStoreDocument;
         document.id = doc.id;
@@ -223,12 +243,12 @@ export class TypeORMVectorStore extends VectorStore {
    * @returns Promise that resolves when the table has been ensured.
    */
   async ensureTableInDatabase(): Promise<void> {
-    await this.appDataSource.query("CREATE EXTENSION IF NOT EXISTS vector;");
-    await this.appDataSource.query(
+    await this.pool.query("CREATE EXTENSION IF NOT EXISTS vector;");
+    await this.pool.query(
       'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
     );
 
-    await this.appDataSource.query(`
+    await this.pool.query(`
       CREATE TABLE IF NOT EXISTS ${this.tableName} (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
         "pageContent" text,

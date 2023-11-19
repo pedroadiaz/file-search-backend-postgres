@@ -11,6 +11,6 @@ export class Documents {
     @Column({ type: "jsonb"})
     metadata: Record<string, any>;
 
-    @Column("varchar", { length: 60000 })
+    @Column({ name: "embedding", nullable: false, type: "varchar" })
     embedding: string;
 }

@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { Context, S3Event } from "aws-lambda";
 import { S3Loader } from "../../services/s3.service";
 import { RecursiveCharacterTextSplitter, CharacterTextSplitter } from "langchain/text_splitter";

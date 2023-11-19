@@ -27,9 +27,6 @@ export const processFilesFunctions = {
                     rules: [
                         {
                             suffix: ".mp3"
-                        },
-                        {
-                            suffix: ".mp4"
                         }
                     ]
                 }

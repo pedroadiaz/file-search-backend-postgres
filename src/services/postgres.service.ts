@@ -1,4 +1,5 @@
 // import { TypeORMVectorStore } from "langchain/vectorstores/typeorm";
+import "reflect-metadata";
 import { TypeORMVectorStore } from "@libs/typeorm.vectorstore";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { BedrockEmbeddings } from "langchain/embeddings/bedrock";
@@ -22,9 +23,9 @@ export class PostgresService implements IVectorStoreService {
 
         console.log("classId: ", classId);
 
-        const filter = useFilter ? {
+        const filter = {
             classId: classId.toString()
-        } : undefined;
+        };
 
         console.log("filter: ", filter);
 
@@ -34,6 +35,21 @@ export class PostgresService implements IVectorStoreService {
         return resultOne;
     }
 
+    async getVectorStore(classId: number) {
+        const embeddings = new OpenAIEmbeddings({
+            openAIApiKey: process.env.OPENAI_API_KEY
+        });
+
+        const typeormVectorStore = await TypeORMVectorStore.fromDataSource(embeddings, {
+            postgresConnectionOptions: options,
+            filter: {
+                classId: classId
+            }
+        });
+
+        return typeormVectorStore.asRetriever(3);
+    }
+
     deleteClassData(classId: string): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
@@ -41,32 +57,23 @@ export class PostgresService implements IVectorStoreService {
     async saveData(docs: Document<Record<string, string>>[], indexId: string): Promise<void> {
         console.log("Save data entered: ");
 
-        const embeddings = new BedrockEmbeddings({
-            region: process.env.BEDROCK_REGION,
-            model: process.env.BEDROCK_EMBEDDINGS_MODEL,
-            maxRetries: 1,
-            maxConcurrency: 2
-        });
-        // const embeddings = new OpenAIEmbeddings({
-        //     openAIApiKey: process.env.OPENAI_API_KEY,
-        //     maxConcurrency: 2,
-        //     maxRetries: 1
+        // const embeddings = new BedrockEmbeddings({
+        //     region: process.env.BEDROCK_REGION,
+        //     model: process.env.BEDROCK_EMBEDDINGS_MODEL,
+        //     maxRetries: 1,
+        //     maxConcurrency: 2
         // });
-        // console.log("open ai: ", process.env.OPENAI_API_KEY);
-
-        console.log("embeddings initialized: ", embeddings);
+        const embeddings = new OpenAIEmbeddings({
+            openAIApiKey: process.env.OPENAI_API_KEY
+        });
 
         const typeormVectorStore = await TypeORMVectorStore.fromDataSource(embeddings, {
             postgresConnectionOptions: options
         });
 
-        console.log("type orm vector store initialized: ", typeormVectorStore);
-
         docs.map(doc => {
             doc.metadata["classId"] = indexId.toString();
         });
-
-        console.log("meta data added");
 
         const blah = await typeormVectorStore.addDocuments(
             docs

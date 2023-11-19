@@ -22,6 +22,7 @@
     "@smithy/protocol-http": "^3.0.9",
     "@smithy/signature-v4": "^2.0.15",
     "@smithy/util-utf8": "^2.0.2",
+    "@types/pg": "^8.10.9",
     "assemblyai": "^2.0.2",
     "aws-sdk": "^2.1484.0",
     "axios": "^1.6.0",
